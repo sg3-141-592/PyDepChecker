@@ -1,10 +1,12 @@
+from packaging.requirements import Requirement
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 from pprint import pprint
 import requests
-import json
 import re
 
 
-def traverseDeps(package, version=None, tree=None, fullTree=None):
+def getPypiData(package, version=None):
 
     url = None
     if version:
@@ -16,14 +18,17 @@ def traverseDeps(package, version=None, tree=None, fullTree=None):
 
     try:
         jsonData = requests.get(url).json()
+        return jsonData
     except:
         print("Error accessing {}".format(url))
         return None
 
-    # Append license information to the tree
-    tree["data"]["license"] = jsonData["info"]["license"]
-    tree["data"]["version"] = jsonData["info"]["version"]
 
+def traverseDeps(package, version=None, tree=None, fullTree=None):
+
+    jsonData = getPypiData(package, version)
+
+    # Append license information to the tree
     # Get dependencies
     dependencies = jsonData["info"]["requires_dist"]
 
@@ -41,35 +46,27 @@ def traverseDeps(package, version=None, tree=None, fullTree=None):
 
 
 def decodeVersion(package):
-    # Check if dependency is an extra
-    extraMatch = re.compile("^.*\(.*\).*;.*extra")
-    reCheck = extraMatch.match(package)
-    if reCheck:
-        return (None, None)
-    # Check if dependency is in format python-dateutil (>=2.6.1)
-    versionMatch = re.compile("^(?P<package>\S*?) \((?P<version>.*?)\).*")
-    reCheck = versionMatch.match(package)
-    if reCheck:
-        return (reCheck.group("package"), reCheck.group("version"))
-    # Check if depdency is in format
-    semiColonMatch = re.compile(r"(?P<package>^\S*);")
-    reCheck = semiColonMatch.match(package)
-    if reCheck:
-        return (reCheck.group("package"), None)
-    # Check if dependency is in format python-dateutil
-    packageNameMatch = re.compile(r"(?P<package>^\S*)")
-    reCheck = packageNameMatch.match(package)
-    if reCheck:
-        return (reCheck.group("package"), None)
-    # Check if dependency is in format
-    packageSemiColonMatch = re.compile(r"^(?P<package>^\S*) ;")
-    reCheck = packageSemiColonMatch.match(package)
-    if reCheck:
-        return (reCheck.group("package"), None)
-    # No version number in this line
-    print("{} is not decodeable".format(package))
-    return (package, None)
-
+    try:
+        req = Requirement(package)
+    except:
+        print("Invalid requirement: ", package)
+        return None, None
+    # Check if extras are specified
+    if req.marker:
+        # TODO: Implement proper support for handling these markers using the req.marker.evaluate()
+        # We might have to let people specify their Python environment on the page
+        print("Skipping ", req.name, " due to ", req.marker)
+        return None, None
+    # Check if a version is specified
+    if req.specifier:
+        # Take the list of releases from PyPi and find the newest compatible release
+        depData = getPypiData(req.name)
+        compatibleVersions = []
+        for release in depData["releases"]:
+            if release in req.specifier:
+                compatibleVersions.append(Version(release))
+        return req.name, max(compatibleVersions)
+    return req.name, None
 
 # Iterate through a nested dict structure to find a match
 def iterateDict(d, target):

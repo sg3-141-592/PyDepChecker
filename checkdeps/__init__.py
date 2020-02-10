@@ -1,4 +1,3 @@
-import logging
 from .dep_check import getDeps
 import json
 

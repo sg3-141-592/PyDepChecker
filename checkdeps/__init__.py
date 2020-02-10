@@ -7,12 +7,10 @@ import azure.functions as func
 def main(req: func.HttpRequest) -> func.HttpResponse:
 
     result = "ERROR!"
-    if "name" in req.params and "version" in req.params:
+    if "name" in req.params:
         result = getDeps(
-            package=req.params.get("name"), version=req.params.get("version")
+            package=req.params.get("name")
         )
-    elif "name" in req.params:
-        result = getDeps(package=req.params.get("name"))
     else:
         return func.HttpResponse("Invalid arguments passed", status_code=400)
 

@@ -29,6 +29,9 @@ def traverseDeps(package, version=None, tree=None, fullTree=None):
     jsonData = getPypiData(package, version)
 
     # Append license information to the tree
+    tree["data"]["license"] = jsonData["info"]["license"]
+    tree["data"]["version"] = jsonData["info"]["version"]
+
     # Get dependencies
     dependencies = jsonData["info"]["requires_dist"]
 
@@ -81,6 +84,7 @@ def iterateDict(d, target):
     return False
 
 
-def getDeps(package, version=None):
-    tree = {"name": package, "children": [], "data": {}}
-    return traverseDeps(package=package, version=version, tree=tree, fullTree=tree)
+def getDeps(package):
+    (pack, vers) = decodeVersion(package)
+    tree = {"name": pack, "children": [], "data": {}}
+    return traverseDeps(package=pack, version=vers, tree=tree, fullTree=tree)

@@ -87,8 +87,16 @@ def iterateDict(d, target):
                 return True
     return False
 
-
-def getDeps(package):
+def getDep(package):
+    """
+    Get single dependency
+    """
     (pack, vers) = decodeVersion(package)
     tree = {"name": pack, "children": [], "data": {}, "summary": {"license": set()}}
     return traverseDeps(package=pack, version=vers, tree=tree, fullTree=tree)
+
+def getDeps(packages):
+    results = []
+    for package in packages.split('\n'):
+        results.append(getDep(package))
+    return results

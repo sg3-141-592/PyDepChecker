@@ -10,11 +10,9 @@ def json_default(obj):
     raise TypeError
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-
-    result = "ERROR!"
-    if "name" in req.params:
-        result = getDeps(package=req.params.get("name"))
+    requestData = req.get_json()
+    if 'data' in requestData:
+        result = getDeps(requestData['data'])
+        return func.HttpResponse(json.dumps(result, default=json_default), status_code=200)
     else:
         return func.HttpResponse("Invalid arguments passed", status_code=400)
-
-    return func.HttpResponse(json.dumps([result], default=json_default))

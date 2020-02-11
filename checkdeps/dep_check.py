@@ -33,7 +33,7 @@ def traverseDeps(package, version=None, tree=None, fullTree=None):
     tree["data"]["version"] = jsonData["info"]["version"]
 
     # Update summary metrics
-    fullTree["summary"]["license"].add(jsonData["info"]["license"])
+    # fullTree["summary"]["license"].add(jsonData["info"]["license"])
 
     # Get dependencies
     dependencies = jsonData["info"]["requires_dist"]
@@ -61,7 +61,7 @@ def decodeVersion(package):
     if req.marker:
         # TODO: Implement proper support for handling these markers using the req.marker.evaluate()
         # We might have to let people specify their Python environment on the page
-        print("Skipping ", req.name, " due to ", req.marker)
+        # print("Skipping ", req.name, " due to ", req.marker)
         return None, None
     # Check if a version is specified
     if req.specifier:
@@ -77,26 +77,39 @@ def decodeVersion(package):
 
 # Iterate through a nested dict structure to find a match
 def iterateDict(d, target):
-    if d["name"] == target:
-        return True
-    for child in d["children"]:
-        if child["name"] == target:
-            return True
-        if len(child["children"]) > 0:
+    if isinstance(d, list):
+        for child in d:
             if iterateDict(child, target):
                 return True
-    return False
+            else:
+                return False
+    else:
+        if d["name"] == target:
+            return True
+        for child in d["children"]:
+            if child["name"] == target:
+                return True
+            if len(child["children"]) > 0:
+                if iterateDict(child, target):
+                    return True
+        return False
 
-def getDep(package):
+def getDep(package, fullTree):
     """
     Get single dependency
     """
     (pack, vers) = decodeVersion(package)
-    tree = {"name": pack, "children": [], "data": {}, "summary": {"license": set()}}
-    return traverseDeps(package=pack, version=vers, tree=tree, fullTree=tree)
+    tree = {"name": pack, "children": [], "data": {}}
+    fullTree.append(traverseDeps(package=pack, version=vers, tree=tree, fullTree=fullTree))
 
 def getDeps(packages):
-    results = []
+    """
+    Get a newline separated list of dependencies
+    """
+    fullTree = []
     for package in packages.split('\n'):
-        results.append(getDep(package))
-    return results
+        if package != '':
+            getDep(package, fullTree)
+    return fullTree
+
+pprint(getDeps("pandas\nmarkdown\nflask"))

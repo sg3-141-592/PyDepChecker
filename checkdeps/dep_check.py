@@ -32,6 +32,9 @@ def traverseDeps(package, version=None, tree=None, fullTree=None):
     tree["data"]["license"] = jsonData["info"]["license"]
     tree["data"]["version"] = jsonData["info"]["version"]
 
+    # Update summary metrics
+    fullTree["summary"]["license"].add(jsonData["info"]["license"])
+
     # Get dependencies
     dependencies = jsonData["info"]["requires_dist"]
 
@@ -71,6 +74,7 @@ def decodeVersion(package):
         return req.name, max(compatibleVersions)
     return req.name, None
 
+
 # Iterate through a nested dict structure to find a match
 def iterateDict(d, target):
     if d["name"] == target:
@@ -86,5 +90,5 @@ def iterateDict(d, target):
 
 def getDeps(package):
     (pack, vers) = decodeVersion(package)
-    tree = {"name": pack, "children": [], "data": {}}
+    tree = {"name": pack, "children": [], "data": {}, "summary": {"license": set()}}
     return traverseDeps(package=pack, version=vers, tree=tree, fullTree=tree)

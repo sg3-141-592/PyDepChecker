@@ -31,6 +31,7 @@ def traverseDeps(package, version=None, tree=None, fullTree=None, summary=None):
     # Append license information to the tree
     tree["data"]["license"] = jsonData["info"]["license"]
     tree["data"]["version"] = jsonData["info"]["version"]
+    tree["data"]["url"] = jsonData["info"]["release_url"]
 
     # Update summary metrics
     summary["licenses"].add(jsonData["info"]["license"])

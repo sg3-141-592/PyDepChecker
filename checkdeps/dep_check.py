@@ -24,7 +24,7 @@ def getPypiData(package, version=None):
         return None
 
 
-def traverseDeps(package, version=None, tree=None, fullTree=None):
+def traverseDeps(package, version=None, tree=None, fullTree=None, summary=None):
 
     jsonData = getPypiData(package, version)
 
@@ -33,7 +33,7 @@ def traverseDeps(package, version=None, tree=None, fullTree=None):
     tree["data"]["version"] = jsonData["info"]["version"]
 
     # Update summary metrics
-    # fullTree["summary"]["license"].add(jsonData["info"]["license"])
+    summary["licenses"].add(jsonData["info"]["license"])
 
     # Get dependencies
     dependencies = jsonData["info"]["requires_dist"]
@@ -46,7 +46,7 @@ def traverseDeps(package, version=None, tree=None, fullTree=None):
                 if not iterateDict(fullTree, pack):
                     newEntry = {"name": pack, "children": [], "data": {}}
                     tree["children"].append(newEntry)
-                    traverseDeps(pack, tree=newEntry, fullTree=fullTree)
+                    traverseDeps(pack, tree=newEntry, fullTree=fullTree, summary=summary)
 
     return tree
 
@@ -94,22 +94,21 @@ def iterateDict(d, target):
                     return True
         return False
 
-def getDep(package, fullTree):
+def getDep(package, fullTree, summary=None):
     """
     Get single dependency
     """
     (pack, vers) = decodeVersion(package)
     tree = {"name": pack, "children": [], "data": {}}
-    fullTree.append(traverseDeps(package=pack, version=vers, tree=tree, fullTree=fullTree))
+    fullTree.append(traverseDeps(package=pack, version=vers, tree=tree, fullTree=fullTree, summary=summary))
 
 def getDeps(packages):
     """
     Get a newline separated list of dependencies
     """
     fullTree = []
+    summary = { 'licenses' : set() }
     for package in packages.split('\n'):
         if package != '':
-            getDep(package, fullTree)
-    return fullTree
-
-pprint(getDeps("pandas\nmarkdown\nflask"))
+            getDep(package, fullTree, summary=summary)
+    return {'data': fullTree, 'summary': summary}

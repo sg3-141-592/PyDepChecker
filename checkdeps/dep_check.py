@@ -5,6 +5,8 @@ from pprint import pprint
 import requests
 import re
 
+from .vul_check import getVul
+
 
 def getPypiData(package, version=None):
 
@@ -32,6 +34,7 @@ def traverseDeps(package, version=None, tree=None, fullTree=None, summary=None):
     tree["data"]["license"] = jsonData["info"]["license"]
     tree["data"]["version"] = jsonData["info"]["version"]
     tree["data"]["url"] = jsonData["info"]["release_url"]
+    tree["data"]["vulnerabilities"] = getVul(package, version)
 
     # Update summary metrics
     summary["licenses"].add(jsonData["info"]["license"])

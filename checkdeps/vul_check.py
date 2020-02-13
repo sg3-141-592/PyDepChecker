@@ -12,8 +12,6 @@ def getVul(package, version):
 
     PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),'insecure_full.json')
 
-    logging.info(PATH)
-
     with open(PATH) as json_file:
         results = []
         vulnerabilities = json.load(json_file)

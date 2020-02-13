@@ -34,6 +34,11 @@ def traverseDeps(package, version=None, tree=None, fullTree=None, summary=None):
     tree["data"]["license"] = jsonData["info"]["license"]
     tree["data"]["version"] = jsonData["info"]["version"]
     tree["data"]["url"] = jsonData["info"]["release_url"]
+    
+    # If no version is passed then set the version to the latest version
+    if not version:
+        version = jsonData["info"]["version"]
+    
     tree["data"]["vulnerabilities"] = getVul(package, version)
 
     # Update summary metrics

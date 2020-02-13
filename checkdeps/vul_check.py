@@ -2,12 +2,17 @@ from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 from pprint import pprint
+import logging
 import json
 import os
+from os import listdir
+from os.path import isfile, join
 
 def getVul(package, version):
 
-    PATH = os.path.abspath("checkdeps/insecure_full.json")
+    PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),'insecure_full.json')
+
+    logging.info(PATH)
 
     with open(PATH) as json_file:
         results = []

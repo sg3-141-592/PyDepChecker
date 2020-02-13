@@ -8,7 +8,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 
-def getVul(package, version):
+def getVul(package, version, summaryList):
 
     PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),'insecure_full.json')
 
@@ -24,5 +24,6 @@ def getVul(package, version):
                         details = {'cve' : 'undefined', 'details' : vul['advisory']}
                         if vul['cve']:
                             details['cve'] = vul['cve']
+                            summaryList.add(vul['cve'])
                         results.append(details)
         return results

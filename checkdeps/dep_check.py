@@ -39,7 +39,7 @@ def traverseDeps(package, version=None, tree=None, fullTree=None, summary=None):
     if not version:
         version = jsonData["info"]["version"]
     
-    tree["data"]["vulnerabilities"] = getVul(package, version)
+    tree["data"]["vulnerabilities"] = getVul(package, version, summary['vulnerabilities'])
 
     # Update summary metrics
     summary["licenses"].add(jsonData["info"]["license"])
@@ -116,7 +116,7 @@ def getDeps(packages):
     Get a newline separated list of dependencies
     """
     fullTree = []
-    summary = { 'licenses' : set() }
+    summary = { 'licenses' : set(), 'vulnerabilities' : set() }
     for package in packages.split('\n'):
         if package != '':
             getDep(package, fullTree, summary=summary)
